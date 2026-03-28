@@ -5,7 +5,6 @@ Vue.use(Router)
 
 /* Layout */
 import Layout from '@/layout'
-import { title } from '@/settings'
 
 /**
  * Note: sub-menu only appear when route children.length >= 1
