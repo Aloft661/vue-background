@@ -91,104 +91,115 @@
   import { validUsername } from '@/utils/validate'
   import { getCaptcha } from '@/api/captcha';
 
-export default {
-  name: 'Login',
-  data() {
-    const validateUsername = (rule, value, callback) => {
-      if (!validUsername(value)) {
-        callback(new Error('Please enter the correct user name'))
-      } else {
-        callback()
-      }
-    }
-    const validatePassword = (rule, value, callback) => {
-      if (value.length < 6) {
-        callback(new Error('The password can not be less than 6 digits'))
-      } else {
-        callback()
-      }
-    }
-    return {
-      svg: '',
-      loginForm: {
-        loginId: '',
-        loginPwd: '',
-        captcha: '',
-        checked: true
-      },
-      loginRules: {
-        loginId: [
-          { 
-            required: true, 
-            trigger: 'blur',
-            message: '请输入管理员账号',
-          }
-        ],
-        loginPwd: [
-          {
-            required: true, 
-            trigger: 'blur',
-            message: '请输入管理员密码'
-          }
-        ],
-        captcha: [
-          {
-            required: true, 
-            trigger: 'blur',
-            message: '请输入验证码'
-          }
-        ]
-      },
-      passwordType: 'passwrod',
-      loading: false
-    }
-  },
-  watch: {
-    $route: {
-      handler: function(route) {
-        this.redirect = route.query && route.query.redirect
-      },
-      immediate: true
-    }
-  },
-  created () {
-    this.getCaptchaFunc();
-  },
-  methods: {
-    showPwd() {
-      if (this.passwordType === 'password') {
-        this.passwordType = ''
-      } else {
-        this.passwordType = 'password'
-      }
-      this.$nextTick(() => {
-        this.$refs.password.focus()
-      })
-    },
-    // 登录相关的方法
-    handleLogin() {
-      this.$refs.loginForm.validate(valid => {
-        if (valid) {
-          this.loading = true
-          this.$store.dispatch('user/login', this.loginForm).then(() => {
-            this.$router.push({ path: this.redirect || '/' })
-            this.loading = false
-          }).catch(() => {
-            this.loading = false
-          })
+  export default {
+    name: 'Login',
+    data() {
+      const validateUsername = (rule, value, callback) => {
+        if (!validUsername(value)) {
+          callback(new Error('Please enter the correct user name'))
         } else {
-          console.log('error submit!!')
-          return false
+          callback()
         }
-      })
+      }
+      const validatePassword = (rule, value, callback) => {
+        if (value.length < 6) {
+          callback(new Error('The password can not be less than 6 digits'))
+        } else {
+          callback()
+        }
+      }
+      return {
+        svg: '',
+        loginForm: {
+          loginId: '',
+          loginPwd: '',
+          captcha: '',
+          checked: true
+        },
+        loginRules: {
+          loginId: [
+            { 
+              required: true, 
+              trigger: 'blur',
+              message: '请输入管理员账号',
+            }
+          ],
+          loginPwd: [
+            {
+              required: true, 
+              trigger: 'blur',
+              message: '请输入管理员密码'
+            }
+          ],
+          captcha: [
+            {
+              required: true, 
+              trigger: 'blur',
+              message: '请输入验证码'
+            }
+          ]
+        },
+        passwordType: 'passwrod',
+        loading: false
+      }
     },
-    // 获取验证码
-    async getCaptchaFunc () {
-      const res = await getCaptcha();
-      this.svg = res;
+    watch: {
+      $route: {
+        handler: function(route) {
+          this.redirect = route.query && route.query.redirect
+        },
+        immediate: true
+      }
+    },
+    created () {
+      this.getCaptchaFunc();
+    },
+    methods: {
+      showPwd() {
+        if (this.passwordType === 'password') {
+          this.passwordType = ''
+        } else {
+          this.passwordType = 'password'
+        }
+        this.$nextTick(() => {
+          this.$refs.password.focus()
+        })
+      },
+      // 登录相关的方法
+      handleLogin() {
+        this.$refs.loginForm.validate(valid => {
+          if (valid) {
+            this.loading = true
+            if (this.loginForm.checked) {
+              this.loginForm.remember = 7;
+            }
+            this.$store.dispatch('user/login', this.loginForm).then(() => {
+              this.$router.push({ path: this.redirect || '/' })
+              this.loading = false
+            }).catch((res) => {
+              console.log(res);
+              if (typeof res === 'string') {
+                this.$message.error('验证码错误');
+              } else {
+                this.$message.error('账号或密码错误');
+              }
+              this.getCaptchaFunc();
+              this.loading = false;
+              this.loginForm.captcha = '';
+            })
+          } else {
+            console.log('error submit!!')
+            return false
+          }
+        })
+      },
+      // 获取验证码
+      async getCaptchaFunc () {
+        const res = await getCaptcha();
+        this.svg = res;
+      }
     }
   }
-}
 </script>
 
 <style lang="scss">
