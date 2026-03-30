@@ -17,7 +17,7 @@ service.interceptors.request.use(
 
     const token = localStorage.getItem('adminToken');
     if (token) {
-      config.headers['authentication'] = `Bearer ${token}`;
+      config.headers['authorization'] = `Bearer ${token}`;
     }
     return config
   },
@@ -41,8 +41,8 @@ service.interceptors.response.use(
    * You can also judge the status by HTTP Status Code
    */
   response => {
-    if (response.headers.authentication) {
-      localStorage.setItem('adminToken', response.headers.authentication);
+    if (response.headers.authorization) {
+      localStorage.setItem('adminToken', response.headers.authorization);
     }
     const res = response.data;
     return res;
