@@ -149,6 +149,11 @@
                             type: 'success'
                         });
                         this.fetchData();
+                    } else {
+                        this.$message({
+                            message: '修改失败,请联系相关人员',
+                            type: 'error'
+                        });
                     }
                 } catch (e) {
                     this.$message({
