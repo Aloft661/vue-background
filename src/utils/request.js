@@ -41,8 +41,8 @@ service.interceptors.response.use(
    * You can also judge the status by HTTP Status Code
    */
   response => {
-    if (response.headers.authorization) {
-      localStorage.setItem('adminToken', response.headers.authorization);
+    if (response.headers.authentication) {
+      localStorage.setItem('adminToken', response.headers.authentication);
     }
     const res = response.data;
     return res;
