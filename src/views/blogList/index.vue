@@ -160,6 +160,9 @@
                     })
                 }
             },
+            editBlog (blogInfo) {
+                this.$router.push(`/editBlog/${blogInfo.id}`);
+            },
             sizeChangeHandle (pagerNum) {
                 this.eachPage = parseInt(pagerNum);
                 this.currentPage = 1;
