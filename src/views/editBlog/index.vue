@@ -21,7 +21,7 @@
         </div>
         
         <div class="block">选择分类</div>
-        <el-select v-model="form.select" slot="prepend" placeholder="请选择" >
+        <el-select v-model="form.select" slot="prepend" placeholder="请选择" @change="changeHandle" >
             <el-option 
                 v-for="item in blogType" 
                 :key="item.id" 
@@ -31,7 +31,7 @@
             >
             </el-option>
         </el-select>
-        <el-button type="primary" @click="addArticle">发布文章</el-button>
+        <el-button type="primary" @click="editArticle">确认修改</el-button>
     </div>
 </template>
 
@@ -40,7 +40,7 @@
     import { Editor } from '@toast-ui/vue-editor';
     import Upload from '@/components/Upload.vue';
     import { getBlogTypeApi } from '@/api/blogType'
-    import { addBlog } from '@/api/blog';
+    import { editBlog, findOneBlog } from '@/api/blog';
 
     export default {
         components: {
@@ -49,6 +49,7 @@
         },
         data () {
             return {
+                id: null,
                 form: {
                     title: '',
                     editorText: '',
@@ -63,9 +64,15 @@
         async created () {
             const res = await getBlogTypeApi();
             this.blogType = res.data;
+
+            this.id = this.$route.params.id;
+            const { data } = await findOneBlog(this.id);
+            this.form = data;
+            this.form.select = data.category === null ? '' : data.category.id;
+            this.$refs.toastuiEditor.invoke('setHTML', data.htmlContent);
         },
         methods: {
-            async addArticle () {
+            async editArticle () {
                 let html = this.$refs.toastuiEditor.invoke('getHTML');
                 let markdown = this.$refs.toastuiEditor.invoke('getMarkdown');
                 
@@ -81,9 +88,17 @@
                     markdownContent : markdown
                 }
                 if (obj.title && obj.description && obj.htmlContent && obj.categoryId) {
-                    const res = await addBlog(obj);
+                    const payload = {
+                        id: this.form.id,
+                        ...obj
+                    }
+                    const res = await editBlog(payload);
                     if (!res.code) {
                         this.$router.push('/blogList');
+                        this.$message({
+                            type: 'success',
+                            message: '修改成功'
+                        });
                     } else {
                         this.$message({
                             type: 'error',
@@ -97,6 +112,9 @@
                     });
                 }
             },
+            changeHandle () {
+                this.$forceUpdate();
+            }
         }
     }
 </script>
